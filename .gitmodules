@@ -1,0 +1,3 @@
+[submodule "vendor/EEPROM_Programmer"]
+	path = vendor/EEPROM_Programmer
+	url = https://github.com/MHamiid/EEPROM_Programmer
