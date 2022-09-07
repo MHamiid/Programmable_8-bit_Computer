@@ -5,6 +5,7 @@ Simulated programmable 8-bit computer from scratch using only simple logic gates
 [Clock](#clock)  
 [Bus](#bus)  
 [A-Register](#a-register)  
+[B-Register](#b-register)  
 
 
 ## Clock
@@ -59,3 +60,29 @@ The **register** also has a direct connection to _ALU_'s inputs
 
 ### Schematic
 ![A-Register Module](img/A-Register_Module.png)
+
+
+## B-Register
+**B-Register** is an 8-bit register combined from _two 4-bit_ registers
+
+The **register** is connected to the [Bus](#bus) through a _Tristate_
+
+The **register** also has a connection to _ALU_'s inputs through _XOR Gates_ that decide whether the **register**'s content should be negated or not based on the **Subtraction Signal** for _subtraction_ operations
+
+### Main Components
+- 2 X 74LS173 ( Quad D-Type Filp-Flops With Tristate Outputs )
+- 74LS245 ( Octal Bus Transceivers With Tristate Outputs )
+- 8 X 74LS86 ( 2-Input Exclusive-OR Gate )
+
+### B-Register Signals
+|       **Signal**      |                    **Functionality**                   |
+|:---------------------:|:------------------------------------------------------:|
+|  B Register In Signal |    Read the [Bus](#bus) content into **B Register**    |
+| B Register Out Signal |    Output **B Register** content to the [Bus](#bus)    |
+|    Subtract Signal    | Negate **B Register** content ( Get one's complement ) |
+|   Active High Reset   |              Reset **B Register** content              |
+
+**Note:** The **Control Unit** currently has no **Microinstruction** that controls the **B Register Out Signal**, and the signal is manually fixed to be _inactive (aka HIGH)_ 
+
+### Schematic
+![B-Register Module](img/B-Register_Module.png)
