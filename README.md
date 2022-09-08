@@ -6,7 +6,7 @@ Simulated programmable 8-bit computer from scratch using only simple logic gates
 [Bus](#bus)  
 [A-Register](#a-register)  
 [B-Register](#b-register)  
-
+[ALU](#alu)  
 
 ## Clock
 Clock can operate in **two modes**:
@@ -45,7 +45,7 @@ The **Bus** is connected to _pull down resistors_ to pull the **Bus** to _ground
 
 The **register** is connected to the [Bus](#bus) through a _Tristate_
 
-The **register** also has a direct connection to _ALU_'s inputs
+The **register** also has a direct connection to [ALU](#alu)'s inputs
 
 ### Main Components
 - 2 X 74LS173 ( Quad D-Type Filp-Flops With Tristate Outputs )
@@ -67,7 +67,7 @@ The **register** also has a direct connection to _ALU_'s inputs
 
 The **register** is connected to the [Bus](#bus) through a _Tristate_
 
-The **register** also has a connection to _ALU_'s inputs through _XOR Gates_ that decide whether the **register**'s content should be negated or not based on the **Subtraction Signal** for _subtraction_ operations
+The **register** also has a connection to [ALU](#alu)'s inputs through _XOR Gates_ that decide whether the **register**'s content should be negated or not based on the **Subtraction Signal** for _subtraction_ operations
 
 ### Main Components
 - 2 X 74LS173 ( Quad D-Type Filp-Flops With Tristate Outputs )
@@ -86,3 +86,34 @@ The **register** also has a connection to _ALU_'s inputs through _XOR Gates_ tha
 
 ### Schematic
 ![B-Register Module](img/B-Register_Module.png)
+
+
+## ALU
+**ALU** is an 8-bit **Full Adder** combined from _two 4-bit_ **Full Adders**
+
+Both [A-Register](#a-register) and [B-Register](#b-register) are connected to the **ALU**'s input, and the **ALU** is _constantly_ operating on them
+
+**ALU** supports two **Arithmetic Operations**:
+- Addition
+- Subtraction
+
+**Subtraction** is achieved when the **Subtraction Signal** is enabled _(Active **HIGH**)_, resulting in the [B-Register](#b-register)'s content to be negated, hence, getting **One's Complement**. And the **Subtraction Signal** is also fed to the **carry In** of the first **Full Adder** of the **ALU** **_(C0)_** _(Note the **Subtraction Signal** is active **HIGH**)_, hence, getting **Two's Complement**
+
+
+**ALU** generates two **Flags**:
+- Carry Flag
+- Zero Flag
+
+### Main Components
+- 2 X 74LS283 ( 4-Bit Binary Full Adders With Fast Carry )
+- 74LS245 ( Octal Bus Transceivers With Tristate Outputs )
+- 74HC4078 ( 8-Input NOR Gate )
+
+### ALU Signals
+|    **Signal**   |                              **Functionality**                             |
+|:---------------:|:--------------------------------------------------------------------------:|
+|  ALU Out Signal |                  Output **ALU** content to the [Bus](#bus)                 |
+| Subtract Signal | Fed to the **Carry In** for subtraction operation ( Get two's complement ) |
+
+### Schematic
+![ALU Module](img/ALU_Module.png)
