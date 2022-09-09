@@ -7,6 +7,7 @@ Simulated programmable 8-bit computer from scratch using only simple logic gates
 [A-Register](#a-register)  
 [B-Register](#b-register)  
 [ALU](#alu)  
+[Flags Register](#flags-register)  
 
 ## Clock
 Clock can operate in **two modes**:
@@ -117,3 +118,25 @@ Both [A-Register](#a-register) and [B-Register](#b-register) are connected to th
 
 ### Schematic
 ![ALU Module](img/ALU_Module.png)
+
+
+## Flags-Register
+**Flags Register** is a 4-bit register, which stores the [ALU](#alu)'s two generated flags:
+- Carry Flag
+- Zero Flag
+
+when the **Flags Register In Signal** is enabled
+
+The **register**'s output flags are connected to the **Control Unit** 
+
+### Main Components
+- 74LS173 ( Quad D-Type Filp-Flops With Tristate Outputs )
+
+### Flags-Register Signals
+|        **Signal**        |                   **Functionality**                  |
+|:------------------------:|:----------------------------------------------------:|
+| Flags Register In Signal | Read [ALU](#alu)'s **Flags** into **Flags Register** |
+|     Active High Reset    |           Reset **Flags Register** content           |
+
+### Schematic
+![Flags Register Module](img/Flags-Register_Module.png)
