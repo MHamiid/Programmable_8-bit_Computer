@@ -8,6 +8,7 @@ Simulated programmable 8-bit computer from scratch using only simple logic gates
 [B-Register](#b-register)  
 [ALU](#alu)  
 [Flags Register](#flags-register)  
+[Memory Address Register](#memory-address-register)  
 
 ## Clock
 Clock can operate in **two modes**:
@@ -140,3 +141,21 @@ The **register**'s output flags are connected to the **Control Unit**
 
 ### Schematic
 ![Flags Register Module](img/Flags-Register_Module.png)
+
+
+## Memory-Address-Register
+**Memory Address Register** is a 4-bit register, which stores the 4-bit **memory** address where the **memory** is going to read and output this address content _(If it is **Run Mode**, otherwise in **Programming Mode**, the **memory** is going to use and output the content of the **Manual Address Input**)_
+
+The **register**'s output is connected to the **Memory Address Input Selector** 
+
+### Main Components
+- 74LS173 ( Quad D-Type Filp-Flops With Tristate Outputs )
+
+### Memory-Address-Register Signals
+|        **Signal**        |                       **Functionality**                       |
+|:------------------------:|:-------------------------------------------------------------:|
+| Memory Address In Signal | Read the [Bus](#bus) content into **Memory Address Register** |
+|     Active High Reset    |           Reset **Memory Address Register** content           |
+
+### Schematic
+![Memory Address Register Module](img/Memory-Address-Register_Module.png)
