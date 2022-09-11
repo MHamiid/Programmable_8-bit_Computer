@@ -177,7 +177,7 @@ Both **Selectors/Mutliplexers** selects the input to the **Memory** based on the
 
 ### Main Components
 - 2 X 74LS189 ( 64-Bit Random Access Read/Write Memory )
-- 2 X 74LS157 ( Quadruple 1-of-2 Data Selectors/Multiplexers )
+- 3 X 74LS157 ( Quadruple 1-of-2 Data Selectors/Multiplexers )
 - 74LS245 ( Octal Bus Transceivers With Tristate Outputs )
 
 ### Memory Signals
