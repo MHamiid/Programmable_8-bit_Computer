@@ -9,6 +9,7 @@ Simulated programmable 8-bit computer from scratch using only simple logic gates
 [ALU](#alu)  
 [Flags Register](#flags-register)  
 [Memory Address Register](#memory-address-register)  
+[Memory](#memory)  
 
 ## Clock
 Clock can operate in **two modes**:
@@ -159,3 +160,32 @@ The **register**'s output is connected to the **Memory Address Input Selector**
 
 ### Schematic
 ![Memory Address Register Module](img/Memory-Address-Register_Module.png)
+
+
+## Memory
+**Memory** is a **128-bit (16 X 8)** memory combined from _two 64-bit (16 X 4)_ **Random Access Read/Write Memory**
+
+The **Memory** is connected to the [Bus](#bus) through a _Tristate_
+
+The inputs **(Memory Data Input and Memory Address)** to the **Memory** is the outputs of the **Memory Data Input Selector/Multiplexer** and **Memory Address Input Selector/Multiplexer** where the:
+
+- **Memory Data Input Selector/Multiplexer**: Decides whether the _manual memory data input_ or _the data on the [Bus](#bus)_ will be used as an input to the **Memory**
+
+- **Memory Address Input Selector/Multiplexer**: Decides whether the _manual memory address input_ or _the address in the [Memory Address Register](#memory-address-register)_ will be used as an input to the **Memory**
+
+Both **Selectors/Mutliplexers** selects the input to the **Memory** based on the **Programming Mode Enable Signal**
+
+### Main Components
+- 2 X 74LS189 ( 64-Bit Random Access Read/Write Memory )
+- 2 X 74LS157 ( Quadruple 1-of-2 Data Selectors/Multiplexers )
+- 74LS245 ( Octal Bus Transceivers With Tristate Outputs )
+
+### Memory Signals
+|           **Signal**           |                         **Functionality**                         |
+|:------------------------------:|:-----------------------------------------------------------------:|
+|        Memory Out Signal       |            Output **Memory** content to the [Bus](#bus)           |
+|       Memory Write Enable      | Write the **Data** to the **Memory** at the specified **Address** |
+| Programming Mode Enable Signal |  Selects between the inputs of the two **Selectors/Multiplexers** |
+
+### Schematic
+![Memory Module](img/Memory_Module.png)
