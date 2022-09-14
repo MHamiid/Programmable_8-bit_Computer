@@ -10,6 +10,7 @@ Simulated programmable 8-bit computer from scratch using only simple logic gates
 [Flags Register](#flags-register)  
 [Memory Address Register](#memory-address-register)  
 [Memory](#memory)  
+[Manual Memory Input](#manual-memory-input)  
 
 ## Clock
 Clock can operate in **two modes**:
@@ -175,7 +176,9 @@ The inputs **(Memory Data Input, Memory Address, and Memory Write Enable)** to t
 
 - **Memory Write Enable Selector/Multiplexer**: Decides whether the _manual memory write enable_ or _the **Memory In Signal** with the positive edge of the clock_ will be used as an input to the **Memory**
 
-All **Selectors/Mutliplexers** selects the input to the **Memory** based on the **Programming Mode Enable Signal**
+The **Manual Inputs** referenced above are generated from the [Manual Memory Input Module](#manual-memory-input)
+
+All **Selectors/Mutliplexers** selects the input to the **Memory** based on the **Programming Mode Enable Signal** generated also in the [Manual Memory Input Module](#manual-memory-input)
 
 ### Main Components
 - 2 X 74LS189 ( 64-Bit Random Access Read/Write Memory )
@@ -192,3 +195,28 @@ All **Selectors/Mutliplexers** selects the input to the **Memory** based on the 
 
 ### Schematic
 ![Memory Module](img/Memory_Module.png)
+
+
+## Manual-Memory-Input
+**Manual Memory Input** consists of:
+- **Memory Address Manual Input**: Where the **4-bit [Memory](#memory) Address** is entered manually through the _Dip Switches_
+
+- **Memory Data Manual Input**: Where the **8-bit [Memory](#memory) Data** is entered manually through the _Dip Switches_
+
+- **Memory Manual Write Enable Input**: Where the **[Memory](#memory)'s Write Enable Signal** is generated manually by pressing the _Button_
+
+- **Memory Programming/Run Mode Selector**: Generates the **Programming Mode Enable Signal** that selects between the **Programming Mode** where all the [Memory](#memory) inputs are supplied from the [Manual Memory Input Module](#manual-memory-input), and the **Run Mode** where all the [Memory](#memory) inputs are supplied from the corresponding source for each input as stated in the [Memory Module](#memory). _(Note the LEDs that indicate which mode you are operating in based on the state of the **Switch**)_
+
+### Main Components
+- DIPSW_4 ( Interactive DIP Switch 4 Independent Elements )
+- DIPSW_8 ( Interactive DIP Switch 8 Independent Elements )
+- Button ( SPST Push Button )
+- Switch ( Interactive SPST Switch (Latched Action) )
+
+### Manual Memory Input Signals
+|           **Signal**           |                     **Functionality**                     |
+|:------------------------------:|:---------------------------------------------------------:|
+| Programming Mode Enable Signal | Selects between the **Programming Mode** and **Run Mode** |
+
+### Schematic
+![Manual Memory Input Module](img/Manual-Memory-Input_Module.png)
