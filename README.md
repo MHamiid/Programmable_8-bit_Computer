@@ -11,6 +11,7 @@ Simulated programmable 8-bit computer from scratch using only simple logic gates
 [Memory Address Register](#memory-address-register)  
 [Memory](#memory)  
 [Manual Memory Input](#manual-memory-input)  
+[Program Counter](#program-counter)  
 
 ## Clock
 Clock can operate in **two modes**:
@@ -220,3 +221,26 @@ All **Selectors/Mutliplexers** selects the input to the **Memory** based on the 
 
 ### Schematic
 ![Manual Memory Input Module](img/Manual-Memory-Input_Module.png)
+
+
+## Program-Counter
+**Program Counter** is a _4-bit binary counter_ which gets incremented with each **[Clock](#clock) pulse** if the **Program Counter Enable Signal** is enabled
+
+The **Program Counter** also supports loading a _4-bit_ data from the [Bus](#bus) when the **Program Counter In Signal** is enabled _(Note that, this is used to implement the **Jump Instruction**)_ 
+
+The **Program Counter**'s output is connected to the [Bus](#bus) through a _Tristate_, however, its input is connected to the [Bus](#bus) directly 
+
+### Main Components
+- 74LS161 ( Synchronous 4-Bit Binary Counters )
+- 74LS245 ( Octal Bus Transceivers With Tristate Outputs )
+
+### Program-Counter Signals
+|           **Signal**          |                                  **Functionality**                                 |
+|:-----------------------------:|:----------------------------------------------------------------------------------:|
+|   Program Counter In Signal   |      Load the **lowest 4-bits** from the [Bus](#bus) into **Program Counter**      |
+|   Program Counter Out Signal  |                Output **Program Counter** content to the [Bus](#bus)               |
+| Program Counter Enable Signal | Enable **Program Counter** counting which is synchronized with the [Clock](#clock) |
+|        Active Low Reset       |                          Reset **Program Counter** content                         |
+
+### Schematic
+![Program-Counter Module](img/Program-Counter_Module.png)
