@@ -13,6 +13,7 @@ Simulated programmable 8-bit computer from scratch using only simple logic gates
 [Manual Memory Input](#manual-memory-input)  
 [Program Counter](#program-counter)  
 [Output Display](#output-display)  
+[Instruction Register](#instruction-register)  
 
 ## Clock
 Clock can operate in **two modes**:
@@ -47,7 +48,7 @@ The **Bus** is connected to _pull down resistors_ to pull the **Bus** to _ground
 
 
 ## A-Register
-**A-Register** is an 8-bit register combined from _two 4-bit_ registers
+**A-Register** is an _8-bit_ register combined from _two 4-bit_ registers
 
 The **register** is connected to the [Bus](#bus) through a _Tristate_
 
@@ -69,7 +70,7 @@ The **register** also has a direct connection to [ALU](#alu)'s inputs
 
 
 ## B-Register
-**B-Register** is an 8-bit register combined from _two 4-bit_ registers
+**B-Register** is an _8-bit_ register combined from _two 4-bit_ registers
 
 The **register** is connected to the [Bus](#bus) through a _Tristate_
 
@@ -95,7 +96,7 @@ The **register** also has a connection to [ALU](#alu)'s inputs through _XOR Gate
 
 
 ## ALU
-**ALU** is an 8-bit **Full Adder** combined from _two 4-bit_ **Full Adders**
+**ALU** is an _8-bit_ **Full Adder** combined from _two 4-bit_ **Full Adders**
 
 Both [A-Register](#a-register) and [B-Register](#b-register) are connected to the **ALU**'s input, and the **ALU** is _constantly_ operating on them
 
@@ -254,7 +255,7 @@ The **Program Counter**'s output is connected to the [Bus](#bus) through a _Tris
 
 - **7-Segments Multiplexing Circuit**: Mutliplexes through the **Four 7-Segments** (After the **Arduino** finishes programming the **EEPORM**), using a **2-Bit Counter** (Counting from 0 to 3) and a **2 to 4 Decoder** that takes the **2-Bit Counter** output and outputs the four **Seven Segment Enable Signal**, where they select which **7-Segment** should be active at a time. The **Multiplexing Speed** can be adjusted using the **555 Timer**
 
-- **Output Display Register**: 8-bit register which stores in binary the current **Output Display** value being displayed on the **7-Segments**. The **Register**'s _output_ is connected to the **Display EEPORM _address input_** through a _Tristate_ which enables the **Register**'s output to the **Display EEPORM** (After the **Arduino** finishes programming the **EEPORM**). The **Register**'s _input_ is connected directly to the [Bus](#bus)
+- **Output Display Register**: _8-bit_ register which stores in binary the current **Output Display** value being displayed on the **7-Segments**. The **Register**'s _output_ is connected to the **Display EEPORM _address input_** through a _Tristate_ which enables the **Register**'s output to the **Display EEPORM** (After the **Arduino** finishes programming the **EEPORM**). The **Register**'s _input_ is connected directly to the [Bus](#bus)
 
 - **Display EEPROM**: Programmed using the **Arduino** such as, it would take the _binary output display value_ from the **Output Display Register** as an **Address** to the **Display EEPROM**, and it outputs the **7-Segments** representation for each digit. The **EEPORM** has **four** sections for each the **Positive Numbers** and the **Negative Numbers (Two's Complement)**, **three** sections for each digit placement and the **fourth** is for the sign. These sections are:
     - Ones Place
@@ -311,3 +312,29 @@ The **Program Counter**'s output is connected to the [Bus](#bus) through a _Tris
 ![Output-Dispaly Module_1](img/Output-Display_Module_1.png)
 ![Output-Dispaly Module_2](img/Output-Display_Module_2.png)
 ![Output-Dispaly Module_3](img/Output-Display_Module_3.png)
+
+
+## Instruction-Register
+**Instruction Register** is an _8-bit_ register combined from _two 4-bit_ registers
+
+Each **_4-bit_** stores a different information where:
+
+- Lower _4-bit_: Contains the **Operand (Data)**
+
+- Higher _4-bit_: Contains the **Operation[OP] Code (Instruction)**
+
+The **Instruction Register**'s input is connected directly to the [Bus](#bus), however, **only** its **Lower _4-bit_ output (the Operand)** is connected to the [Bus](#bus) through a _Tristate_
+ 
+### Main Components
+- 2 X 74LS173 ( Quad D-Type Filp-Flops With Tristate Outputs )
+- 74LS245 ( Octal Bus Transceivers With Tristate Outputs )
+
+### Instruction-Register Signals
+|            **Signal**           |                                    **Functionality**                                   |
+|:-------------------------------:|:--------------------------------------------------------------------------------------:|
+|  Instruction Register In Signal |               Read the [Bus](#bus) content into **Instruction Register**               |
+| Instruction Register Out Signal | Output **Instruction Register** _lower 4-bit_ **(Operand)** content to the [Bus](#bus) |
+|        Active High Reset        |                         Reset **Instruction Register** content                         |
+
+### Schematic
+![Instruction-Register Module](img/Instruction-Register_Module.png)
