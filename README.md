@@ -1,5 +1,5 @@
 # Programmable_8-bit_Computer
-Simulated programmable 8-bit computer from scratch using only simple logic gates and basic ICs
+Simulated [Ben Eater](https://eater.net/8bit)'s programmable 8-bit computer from scratch using only simple logic gates and basic ICs
 
 ## Modules
 [Clock](#clock)  
