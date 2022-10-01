@@ -4,8 +4,8 @@ Simulated [Ben Eater](https://eater.net/8bit)'s programmable 8-bit computer from
 ## Modules
 [Clock](#clock)  
 [Bus](#bus)  
-[A-Register](#a-register)  
-[B-Register](#b-register)  
+[A Register](#a-register)  
+[B Register](#b-register)  
 [ALU](#alu)  
 [Flags Register](#flags-register)  
 [Memory Address Register](#memory-address-register)  
@@ -14,6 +14,7 @@ Simulated [Ben Eater](https://eater.net/8bit)'s programmable 8-bit computer from
 [Program Counter](#program-counter)  
 [Output Display](#output-display)  
 [Instruction Register](#instruction-register)  
+[Control Unit](#control-unit)  
 
 ## Clock
 Clock can operate in **two modes**:
@@ -89,7 +90,7 @@ The **register** also has a connection to [ALU](#alu)'s inputs through _XOR Gate
 |    Subtract Signal    | Negate **B Register** content ( Get one's complement ) |
 |   Active High Reset   |              Reset **B Register** content              |
 
-**Note:** The **Control Unit** currently has no **Microinstruction** that controls the **B Register Out Signal**, and the signal is manually fixed to be _inactive (aka HIGH)_ 
+**Note:** The [Control Unit](#control-unit) currently has no **Microinstruction** that controls the **B Register Out Signal**, and the signal is manually fixed to be _inactive (aka HIGH)_ 
 
 ### Schematic
 ![B-Register Module](img/B-Register_Module.png)
@@ -133,7 +134,7 @@ Both [A-Register](#a-register) and [B-Register](#b-register) are connected to th
 
 when the **Flags Register In Signal** is enabled
 
-The **register**'s output flags are connected to the **Control Unit** 
+The **register**'s output flags are connected to the [Control Unit](#control-unit) to support the **Jump Carry and Jump Zero Instructions** 
 
 ### Main Components
 - 74LS173 ( Quad D-Type Filp-Flops With Tristate Outputs )
@@ -338,3 +339,169 @@ The **Instruction Register**'s input is connected directly to the [Bus](#bus), h
 
 ### Schematic
 ![Instruction-Register Module](img/Instruction-Register_Module.png)
+
+
+## Control-Unit
+Outputs the **_16-bit_ Control Word** using **Control Unit EEPROMs** as a _lookup table_
+
+**Control Unit Module** can be divided into sections and sub-modules:
+
+- **Microcode Counter**: 
+    - Counts **from 0 to 4 _(Five Steps/Cycles)_**, as the **Microcode Counter Reset Signal** resets the **Mircocode Counter**  instantly to **zero** when it reaches the **fifth** count/tick.
+
+    - As Each **instruction** requires **Five Steps/Cycles** to execute the **Fetch, decode, and excute** cycle
+    
+    - Counter is incremented with the **inverse** of each clock cycle. As to set the approprite **control signals** before the next rising edge of the clock
+
+    - **Microcode counter _3-bit_ output** is fed to the **Control Unit EEPROMs**'s addresses **0 to 2** (After the **Arduino** finishes programming the **EEPORM**)
+
+- **Control Unit EEPROMs Input Selector**: Selects the **_address input_** for the **Control Unit EEPROMs** between:
+    - The **Arduino**'s address output. **(When programming the EEPROM)**
+
+    - The **Mircocode Counter** output with the **Instruction Register** _higher byte output (The Operation[OP] Code (Instruction))_ with the **Flags Register** output. **(After the **Arduino** finishes programming the EEPORM)**
+
+- **Control Unit EEPROMs**: Consists of **two EEPROMS** programmed **_identically_** where the **first EEPROM** is used to output the **higher _8-bit_** of the **Control Word** and the **second EEPROM** is used to output the **lower _8-bit_** of the **Control Word**.
+
+    And selection between the **first EEPROM** output and the **second EEPROM** output **(After being programmed)** can be made using the **_Address Line 7_** of the **EEPROMs** where the **first EERPOM**'s **_Address Line 7_** is fixed to **Low** and the **second EERPOM**'s **_Address Line 7_** is fixed to **High**.
+
+    |  **Control EEPROM Output Enable Bit**  |                   **First EEPROM Address 7**                   |                   **Second EEPROM Address 7**                  |
+    |:--------------------------------------:|:--------------------------------------------------------------:|:--------------------------------------------------------------:|
+    | **Low (Arduino finished programming)** |                               Low                              |                              High                              |
+    |    **High (Arduino is programming)**   | Control EEPROM Address7 (Byte Selector) **(Arduino's Output)** | Control EEPROM Address7 (Byte Selector) **(Arduino's Output)** |
+
+    The **EEPROMs** are programmed using the **Arduino** such as, it would take the:
+    - **Microcode Counter _3-bit_** output as the first **3-bit address _0 to 2_** to the **EEPROM**
+
+    - **Instruction Register _higher byte (Operation Code)_** output as **address _3 to 6_** to the **EEPROM**
+        
+    - **Address 7** is used as a selector between the output intended for each **EEPROM**, as they are programmed **_identically_**. Where the _intended output_ of the **first EEPROM** is stored where **Address 7** is set **Low** and for **second EEPROM** is stored where **Address 7** is set **High** 
+
+    - **Flags Register _2-bit_** output as **address _8 to 9_** to the **EEPROM**
+
+    **Microinstructions/Microcodes** can be formed by combining different **Control Signals** to form a **_16-bit_ Control Word**:
+
+    | **Control Signal** |               **Control Signal Functionality**               | **Control Signal Bit Position In Control Word** |
+    |:------------------:|:------------------------------------------------------------:|:-----------------------------------------------:|
+    |       **HLT**      |                   Halt the [Clock](#clock)                   |               **1000000000000000**              |
+    |       **MI**       |    [Memory Address Register](#memory-address-register) In    |               **0100000000000000**              |
+    |       **RI**       |                     [Memory](#memory) In                     |               **0010000000000000**              |
+    |       **RO**       |                     [Memory](#memory) Out                    |               **0001000000000000**              |
+    |       **IO**       |       [Instruction Register](#instruction-register) Out      |               **0000100000000000**              |
+    |       **II**       |       [Instruction Register](#instruction-register) In       |               **0000010000000000**              |
+    |       **AI**       |                 [A Register](#a-register) In                 |               **0000001000000000**              |
+    |       **AO**       |                 [A Register](#a-register) Out                |               **0000000100000000**              |
+    |       **EO**       |                   [ALU](#alu) Register Out                   |               **0000000010000000**              |
+    |       **SU**       | [B Register](#b-register) Subtract Signal Enabled (Subtract) |               **0000000001000000**              |
+    |       **BI**       |                 [B Register](#b-register) In                 |               **0000000000100000**              |
+    |       **OI**       |         [Output Display](#output-display) Register In        |               **0000000000010000**              |
+    |       **CE**       |      [Program Counter](#program-counter) Enable (Count)      |               **0000000000001000**              |
+    |       **CO**       |            [Program Counter](#program-counter) Out           |               **0000000000000100**              |
+    |        **J**       |         [Program Counter](#program-counter) In (Jump)        |               **0000000000000010**              |
+    |       **FI**       |             [Flags Register](#flags-register) In             |               **0000000000000001**              |
+
+
+    **Control Unit** supports **_11_ Instructions (OP Code)**:
+    | **Instruction (OP Code)** |           **Op Code Binary**           |                                                                                                                                                **Functionality**                                                                                                                                                |
+    |:-------------------------:|:--------------------------------------:|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------:|
+    |   **NOP (NO OPERATION)**  | **0000, 1001, 1010, 1011, 1100, 1101** |                                                                                                                                  Doing just the **Fetch** and **Decode** cycle                                                                                                                                  |
+    |      **LDA (LOAD A)**     |                **0001**                |                                                                                                           Load data from [Memory](#memory) at the specified address into the [A register](#a-register)                                                                                                          |
+    |          **ADD**          |                **0010**                |            Load data from [Memory](#memory) at the specified address into the [B register](#b-register), and load the sum into the [A register](#a-register). And load the flags status into the [Flags Register](#flags-register) before the [Output Display](#output-display)'s register is changed           |
+    |     **SUB (SUBRACT)**     |                **0011**                | Load data from [Memory](#memory) at the specified address into the [B register](#b-register), set the subtract bit and load the sum into the [A register](#a-register). And load the flags status into the [Flags Register](#flags-register) before the [Output Display](#output-display)'s register is changed |
+    |     **STA (STORA A)**     |                **0100**                |                                                                                                         Load data from the [A register](#a-register) into the [Memory](#memory) at the specified address                                                                                                        |
+    |  **LDI (LOAD IMMEDIATE)** |                **0101**                |                                                                                                                        Load the **Operand _(4-bits)_** into the [A register](#a-register)                                                                                                                       |
+    |       **JMP (JUMP)**      |                **0110**                |                                                                                 Load the **Operand _(4-bits address we want to jump to)_** into the [Program Counter](#program-counter) to be executed the **next clock cycle**                                                                                 |
+    |    **JC (JUMP CARRY)**    |                **0111**                |                                                               If the **Carry Flag** is **_set_**. Load the **Operand _(4-bits address we want to jump to)_** into the [Program Counter](#program-counter) to be executed the **next clock cycle**                                                               |
+    |     **JZ (JUMP ZERO)**    |                **1000**                |                                                                If the **Zero Flag** is **_set_**. Load the **Operand _(4-bits address we want to jump to)_** into the [Program Counter](#program-counter) to be executed the **next clock cycle**                                                               |
+    |          **OUT**          |                **1110**                |                                                                                                           load data from [A register](#a-register) to the [Output Display](#output-display)'s register                                                                                                          |
+    |       **HLT (HALT)**      |                **1111**                |                                                                                                                                      Halt/Stop the computer [Clock](#clock)                                                                                                                                     |
+
+
+
+    ### Control Unit EEPROMs Content:
+    | EEPROM Address 0 : 2<br><br>Microcode Counter (Step) | EEPROM Address 3 : 6<br><br>Instruction (OP Code) | EEPROM Address 8<br><br>Carry Flag (CF) | EEPROM Address 9<br><br>Zero Flag (ZF) |       Control Word       |
+    |:----------------------------------------------------:|:-------------------------------------------------:|:---------------------------------------:|:--------------------------------------:|:------------------------:|
+    |                    **000 (Fetch)**                   |                    **X X X X**                    |                  **X**                  |                  **X**                 |       **MI \| CO**       |
+    |              **001 (Fetch and Decode)**              |                    **X X X X**                    |                  **X**                  |                  **X**                 |    **RO \| II \| CE**    |
+    |                   **010 (Execute)**                  |                   **0000 (NOP)**                  |                  **X**                  |                  **X**                 |   **0000000000000000**   |
+    |                   **011 (Execute)**                  |                   **0000 (NOP)**                  |                  **X**                  |                  **X**                 |   **0000000000000000**   |
+    |                   **100 (Execute)**                  |                   **0000 (NOP)**                  |                  **X**                  |                  **X**                 |   **0000000000000000**   |
+    |                   **010 (Execute)**                  |                   **0001 (LDA)**                  |                  **X**                  |                  **X**                 |       **IO \| MI**       |
+    |                   **011 (Execute)**                  |                   **0001 (LDA)**                  |                  **X**                  |                  **X**                 |       **RO \| AI**       |
+    |                   **100 (Execute)**                  |                   **0001 (LDA)**                  |                  **X**                  |                  **X**                 |   **0000000000000000**   |
+    |                   **010 (Execute)**                  |                   **0010 (ADD)**                  |                  **X**                  |                  **X**                 |       **IO \| MI**       |
+    |                   **011 (Execute)**                  |                   **0010 (ADD)**                  |                  **X**                  |                  **X**                 |       **RO \| BI**       |
+    |                   **100 (Execute)**                  |                   **0010 (ADD)**                  |                  **X**                  |                  **X**                 |    **EO \| AI \| FI**    |
+    |                   **010 (Execute)**                  |                   **0011 (SUB)**                  |                  **X**                  |                  **X**                 |       **IO \| MI**       |
+    |                   **011 (Execute)**                  |                   **0011 (SUB)**                  |                  **X**                  |                  **X**                 |       **RO \| BI**       |
+    |                   **100 (Execute)**                  |                   **0011 (SUB)**                  |                  **X**                  |                  **X**                 | **EO \| AI \| SU \| FI** |
+    |                   **010 (Execute)**                  |                   **0100 (STA)**                  |                  **X**                  |                  **X**                 |       **IO \| MI**       |
+    |                   **011 (Execute)**                  |                   **0100 (STA)**                  |                  **X**                  |                  **X**                 |       **AO \| RI**       |
+    |                   **100 (Execute)**                  |                   **0100 (STA)**                  |                  **X**                  |                  **X**                 |   **0000000000000000**   |
+    |                   **010 (Execute)**                  |                   **0101 (LDI)**                  |                  **X**                  |                  **X**                 |       **IO \| AI**       |
+    |                   **011 (Execute)**                  |                   **0101 (LDI)**                  |                  **X**                  |                  **X**                 |   **0000000000000000**   |
+    |                   **100 (Execute)**                  |                   **0101 (LDI)**                  |                  **X**                  |                  **X**                 |   **0000000000000000**   |
+    |                   **010 (Execute)**                  |                   **0110 (JMP)**                  |                  **X**                  |                  **X**                 |        **IO \| J**       |
+    |                   **011 (Execute)**                  |                   **0110 (JMP)**                  |                  **X**                  |                  **X**                 |   **0000000000000000**   |
+    |                   **100 (Execute)**                  |                   **0110 (JMP)**                  |                  **X**                  |                  **X**                 |   **0000000000000000**   |
+    |                   **010 (Execute)**                  |                   **0111 (JC)**                   |                  **0**                  |                  **X**                 |   **0000000000000000**   |
+    |                   **010 (Execute)**                  |                   **0111 (JC)**                   |                  **1**                  |                  **X**                 |   **0000000000000000**   |
+    |                   **011 (Execute)**                  |                   **0111 (JC)**                   |                  **X**                  |                  **X**                 |   **0000000000000000**   |
+    |                   **100 (Execute)**                  |                   **0111 (JC)**                   |                  **X**                  |                  **X**                 |   **0000000000000000**   |
+    |                   **010 (Execute)**                  |                   **1000 (JZ)**                   |                  **X**                  |                  **0**                 |   **0000000000000000**   |
+    |                   **010 (Execute)**                  |                   **1000 (JZ)**                   |                  **X**                  |                  **1**                 |        **IO \| J**       |
+    |                   **011 (Execute)**                  |                   **1000 (JZ)**                   |                  **X**                  |                  **X**                 |   **0000000000000000**   |
+    |                   **100 (Execute)**                  |                   **1000 (JZ)**                   |                  **X**                  |                  **X**                 |   **0000000000000000**   |
+    |                   **010 (Execute)**                  |                   **1001 (NOP)**                  |                  **X**                  |                  **X**                 |   **0000000000000000**   |
+    |                   **011 (Execute)**                  |                   **1001 (NOP)**                  |                  **X**                  |                  **X**                 |   **0000000000000000**   |
+    |                   **100 (Execute)**                  |                   **1001 (NOP)**                  |                  **X**                  |                  **X**                 |   **0000000000000000**   |
+    |                   **010 (Execute)**                  |                   **1010 (NOP)**                  |                  **X**                  |                  **X**                 |   **0000000000000000**   |
+    |                   **011 (Execute)**                  |                   **1010 (NOP)**                  |                  **X**                  |                  **X**                 |   **0000000000000000**   |
+    |                   **100 (Execute)**                  |                   **1010 (NOP)**                  |                  **X**                  |                  **X**                 |   **0000000000000000**   |
+    |                   **010 (Execute)**                  |                   **1011 (NOP)**                  |                  **X**                  |                  **X**                 |   **0000000000000000**   |
+    |                   **011 (Execute)**                  |                   **1011 (NOP)**                  |                  **X**                  |                  **X**                 |   **0000000000000000**   |
+    |                   **100 (Execute)**                  |                   **1011 (NOP)**                  |                  **X**                  |                  **X**                 |   **0000000000000000**   |
+    |                   **010 (Execute)**                  |                   **1100 (NOP)**                  |                  **X**                  |                  **X**                 |   **0000000000000000**   |
+    |                   **011 (Execute)**                  |                   **1100 (NOP)**                  |                  **X**                  |                  **X**                 |   **0000000000000000**   |
+    |                   **100 (Execute)**                  |                   **1100 (NOP)**                  |                  **X**                  |                  **X**                 |   **0000000000000000**   |
+    |                   **010 (Execute)**                  |                   **1101 (NOP)**                  |                  **X**                  |                  **X**                 |   **0000000000000000**   |
+    |                   **011 (Execute)**                  |                   **1101 (NOP)**                  |                  **X**                  |                  **X**                 |   **0000000000000000**   |
+    |                   **100 (Execute)**                  |                   **1101 (NOP)**                  |                  **X**                  |                  **X**                 |   **0000000000000000**   |
+    |                   **010 (Execute)**                  |                   **1110 (OUT)**                  |                  **X**                  |                  **X**                 |       **AO \| OI**       |
+    |                   **011 (Execute)**                  |                   **1110 (OUT)**                  |                  **X**                  |                  **X**                 |   **0000000000000000**   |
+    |                   **100 (Execute)**                  |                   **1110 (OUT)**                  |                  **X**                  |                  **X**                 |   **0000000000000000**   |
+    |                   **010 (Execute)**                  |                   **1111 (HLT)**                  |                  **X**                  |                  **X**                 |          **HLT**         |
+    |                   **011 (Execute)**                  |                   **1111 (HLT)**                  |                  **X**                  |                  **X**                 |   **0000000000000000**   |
+    |                   **100 (Execute)**                  |                   **1111 (HLT)**                  |                  **X**                  |                  **X**                 |   **0000000000000000**   |
+    |                        **101**                       |                    **X X X X**                    |                  **X**                  |                  **X**                 |   **0000000000000000**   |
+    |                        **110**                       |                    **X X X X**                    |                  **X**                  |                  **X**                 |   **0000000000000000**   |
+    |                        **111**                       |                    **X X X X**                    |                  **X**                  |                  **X**                 |   **0000000000000000**   |
+
+    **_Note that EEPROM Address 7 is not mentioned in the table. As discussed earlier EEPROM Address 7 is used for selecting the Control Word Byte for each of the two EEPROMS_**
+
+
+- **Control Unit EEPROMs Programmer**: Programs the **Control Unit EEPROMs** as discussed. It outputs the **EEPROMs Addresses** serially to _shift registers (to make them **parallel** as the number of the **Arduino** pins are limited)_, while it outputs the **EEPORMs Data** parallelly. It is also connected to a **Serial Monitor** for outputting the state of the **EEPORMs** programming  
+
+### Main Components
+- 74LS161 ( Synchronous 4-Bit Binary Counters )
+- 74LS138 ( 3-Line to 8-Line Decoders/Demultiplexers )
+- 3 X 74LS157 ( Quadruple 1-of-2 Data Selectors/Multiplexers )
+- 2 X 62256 ( CMOS RAM (32k X 8-bit) )
+- Arduino Nano ( ATMEGA328P )
+- 2 X 74HC595 ( 8-Bit Shift Registers With Tristate Output Registers )
+- 3 X 74LS245 ( Octal Bus Transceivers With Tristate Outputs )
+
+### Control-Unit Signals
+|                 **Signal**                 |                                 **Functionality**                                 |
+|:------------------------------------------:|:---------------------------------------------------------------------------------:|
+|       Microcode Counter Reset Signal       |                        Reset **Microcode Counter** to **0**                       |
+|      Control EEPROM Output Enable Bit      |              Indication that the **Arduino** finished its programming             |
+| (Inverse) Control EEPROM Output Enable Bit |              The inverse of the **Control EEPROM Output Enable Bit**              |
+|         Control EEPROM Write Enable        |      Write the data to the **Control Unit EEPROMs** with the provided address     |
+|   Control EEPROM Address7 (Byte Selector)  | Select between the **lower** and **higher byte** of the **_16-bit_ Control Word** |
+|              Active Low Reset              |                        Reset **Microcode Counter** to **0**                       |
+
+### Schematic
+![Control-Unit Module_1](img/Control-Unit_Module_1.png)
+![Control-Unit Module_2](img/Control-Unit_Module_2.png)
+![Control-Unit Module_3](img/Control-Unit_Module_3.png)
+![Control-Unit Module_4](img/Control-Unit_Module_4.png)
