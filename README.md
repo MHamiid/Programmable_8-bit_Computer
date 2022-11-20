@@ -15,6 +15,7 @@ Simulated [Ben Eater](https://eater.net/8bit)'s programmable 8-bit computer from
 [Output Display](#output-display)  
 [Instruction Register](#instruction-register)  
 [Control Unit](#control-unit)  
+[Reset](#reset)  
 
 ## Clock
 Clock can operate in **two modes**:
@@ -505,3 +506,24 @@ Outputs the **_16-bit_ Control Word** using **Control Unit EEPROMs** as a _looku
 ![Control-Unit Module_2](img/Control-Unit_Module_2.png)
 ![Control-Unit Module_3](img/Control-Unit_Module_3.png)
 ![Control-Unit Module_4](img/Control-Unit_Module_4.png)
+
+
+## Reset
+**Reset** generates _two reset signals_ when the **Button** is pressed:
+
+- **Active High Reset**
+- **Active Low Reset**
+
+that are used to reset the different computer's modules
+
+### Main Components
+- Button ( SPST Push Button )
+
+### Reset Signals
+|     **Signal**    |                      **Functionality**                     |
+|:-----------------:|:----------------------------------------------------------:|
+| Active High Reset | Reset components that reset with an **Active High Signal** |
+|  Active Low Reset |  Reset components that reset with an **Active Low Signal** |
+
+### Schematic
+![Reset Module](img/Reset_Module.png)
