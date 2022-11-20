@@ -16,6 +16,7 @@ Simulated [Ben Eater](https://eater.net/8bit)'s programmable 8-bit computer from
 [Instruction Register](#instruction-register)  
 [Control Unit](#control-unit)  
 [Reset](#reset)  
+[Serial Monitor](#serial-monitor)  
 
 ## Clock
 Clock can operate in **two modes**:
@@ -527,3 +528,16 @@ that are used to reset the different computer's modules
 
 ### Schematic
 ![Reset Module](img/Reset_Module.png)
+
+
+## Serial-Monitor
+**Serial Monitor** displays the serial output of the **Arduino** of each module:
+
+- [Output Display](#output-display)
+- [Control Unit](#control-unit)
+
+### Main Components
+- 2 X Virtual Terminal
+
+### Schematic
+![Serial-Monitor Module](img/Serial-Monitor_Module.png)
